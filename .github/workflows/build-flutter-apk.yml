@@ -17,119 +17,21 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          cache: true
 
-      - name: Create Flutter project
+      - name: Create project
         run: |
           flutter create --platforms=android --org pl.matematyka --project-name matematyka .
+          rm -rf test
 
-      - name: Create math app
+      - name: Create app
         run: |
-          cat > lib/main.dart <<'DART'
-          import 'dart:math';
-          import 'package:flutter/material.dart';
+          cp app.dart lib/main.dart
 
-          void main() {
-            runApp(const MathApp());
-          }
+      - name: Build APK
+        run: flutter build apk --release
 
-          class MathApp extends StatelessWidget {
-            const MathApp({super.key});
-
-            @override
-            Widget build(BuildContext context) {
-              return MaterialApp(
-                debugShowCheckedModeBanner: false,
-                title: 'Trening matematyczny',
-                theme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: Colors.blue,
-                  ),
-                  useMaterial3: true,
-                ),
-                home: const MathPage(),
-              );
-            }
-          }
-
-          class MathPage extends StatefulWidget {
-            const MathPage({super.key});
-
-            @override
-            State<MathPage> createState() => _MathPageState();
-          }
-
-          class _MathPageState extends State<MathPage> {
-            final Random random = Random();
-            final TextEditingController answerController =
-                TextEditingController();
-
-            String mode = '+';
-
-            int a = 0;
-            int b = 0;
-            int result = 0;
-
-            int good = 0;
-            int bad = 0;
-            int dontKnow = 0;
-
-            String message = '';
-
-            final List<String> history = [];
-
-            @override
-            void initState() {
-              super.initState();
-              newTask();
-            }
-
-            int twoOrThreeDigits() {
-              if (random.nextBool()) {
-                return random.nextInt(90) + 10;
-              }
-
-              return random.nextInt(900) + 100;
-            }
-
-            void changeMode(String newMode) {
-              setState(() {
-                mode = newMode;
-                newTask();
-              });
-            }
-
-            void newTask() {
-              answerController.clear();
-              message = '';
-
-              if (mode == '×') {
-                a = random.nextInt(90) + 10;
-                b = random.nextInt(90) + 10;
-                result = a * b;
-              } else if (mode == '÷') {
-                do {
-                  b = random.nextInt(90) + 10;
-
-                  final quotient =
-                      random.nextInt(8) + 2;
-
-                  a = b * quotient;
-                  result = quotient;
-                } while (a > 99);
-              } else {
-                a = twoOrThreeDigits();
-                b = twoOrThreeDigits();
-
-                if (mode == '-' && b > a) {
-                  final temp = a;
-                  a = b;
-                  b = temp;
-                }
-
-                result =
-                    mode == '+' ? a + b : a - b;
-              }
-            }
-
-            void
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Matematyka-Flutter-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
