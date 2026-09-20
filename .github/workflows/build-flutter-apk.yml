@@ -25,7 +25,7 @@ jobs:
 
       - name: Create app
         run: |
-          cp app.dart lib/main.dart
+          cp .github/workflows/app.dart lib/main.dart 
 
       - name: Build APK
         run: flutter build apk --release
